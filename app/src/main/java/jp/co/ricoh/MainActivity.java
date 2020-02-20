@@ -17,6 +17,8 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.util.Random;
+
 import jp.co.ricoh.bean.MessageEvent;
 import jp.co.ricoh.service.MQTTService;
 
@@ -41,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    //处理事件 这里是将获取到的消息吐司了一下
+    //处理事件
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void showTheEventMessage(MessageEvent messageEvent) {
         showNotification(this, messageEvent.getMessage());
@@ -68,7 +70,9 @@ public class MainActivity extends AppCompatActivity {
                 .setContentIntent(PendingIntent.getActivity(context, 0, new Intent(this, HelloActivity.class), PendingIntent.FLAG_CANCEL_CURRENT))
                 .build();
         //3.notify
-        notificationManager.notify(1, notification);
+        //notifyId每次要不一致，不然下一次的通知会覆盖上一次
+        int notifyId = new Random().nextInt();
+        notificationManager.notify(notifyId, notification);
     }
 
     @Override

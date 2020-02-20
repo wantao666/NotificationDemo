@@ -23,7 +23,7 @@ import jp.co.ricoh.callback.PushCallback;
 
 public class MQTTService extends Service {
     private static final String TAG = "MQTTService";
-    public static final String BROKER_URL = "tcp://172.25.79.66:61616";
+    public static final String BROKER_URL = "tcp://172.25.79.66:1883";
     public static final String CLIENT_ID = "admin";
     //订阅的主题
     public static final String TOPIC = "demo";

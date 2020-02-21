@@ -50,7 +50,6 @@ public class MQTTService extends Service {
         try {
             //第三个参数代表持久化客户端，如果为null，则不持久化
             mqttClient = new MqttClient(BROKER_URL, CLIENT_ID, new MemoryPersistence());
-            Log.i(TAG, "onStartCommand: 111");
             //mqtt连接设置
             mqttOptions = new MqttConnectOptions();
             mqttOptions.setUserName(username);
@@ -60,11 +59,13 @@ public class MQTTService extends Service {
             mqttOptions.setKeepAliveInterval(20);
             //false代表可以接受离线消息
             mqttOptions.setCleanSession(false);
+           // mqttOptions.setAutomaticReconnect(true);
             // 设置回调
-            mqttClient.setCallback(new PushCallback());
+            mqttClient.setCallback(new PushCallback(mqttClient));
             Log.i(TAG, "onStartCommand: before connect");
-            MqttTopic topic1 = mqttClient.getTopic(TOPIC);
-            mqttOptions.setWill(topic1, "close".getBytes(), 2, true);
+            //客户端下线，其它客户端或者自己再次上线可以接收"遗嘱"消息
+//            MqttTopic topic1 = mqttClient.getTopic(TOPIC);
+//            mqttOptions.setWill(topic1, "close".getBytes(), 2, true);
             mqttClient.connect(mqttOptions);
             Log.i(TAG, "onStartCommand: after connect");
 

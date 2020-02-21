@@ -1,6 +1,7 @@
 package jp.co.ricoh;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -8,7 +9,10 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
+import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -23,17 +27,18 @@ import jp.co.ricoh.bean.MessageEvent;
 import jp.co.ricoh.service.MQTTService;
 
 public class MainActivity extends AppCompatActivity {
+    private static final String TAG = "MainActivity";
     private Button mBtnSend;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        //在需要订阅时间的地方注册事件
+        EventBus.getDefault().register(this);
         //启动服务
         Intent intent = new Intent(this, MQTTService.class);
         startService(intent);
-        //在需要订阅时间的地方注册事件
-        EventBus.getDefault().register(this);
         mBtnSend = findViewById(R.id.btn_send);
         mBtnSend.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -44,16 +49,24 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //处理事件
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
     public void showTheEventMessage(MessageEvent messageEvent) {
+        Log.i(TAG, "showTheEventMessage: show notification");
         showNotification(this, messageEvent.getMessage());
     }
 
     public void showNotification(Context context, String content) {
         //1.创建通知管理器
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        NotificationCompat.Builder builder;
+        Log.i(TAG, "showNotification:version: " + Build.VERSION.SDK_INT);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {//Android 8.0版本适配
+            builder = new NotificationCompat.Builder(context, "default");
+        } else {
+            builder = new NotificationCompat.Builder(context);
+        }
         //2.创建通知实例
-        Notification notification = new Notification.Builder(context)
+        Notification notification = builder
                 .setContentTitle("通知标题")
                 .setContentText(content)
                 .setWhen(System.currentTimeMillis())
@@ -80,5 +93,15 @@ public class MainActivity extends AppCompatActivity {
         //取消事件订阅
         EventBus.getDefault().unregister(this);
         super.onDestroy();
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            Log.i(TAG, "onKeyDown: 点击返回键");
+            moveTaskToBack(true);
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 }

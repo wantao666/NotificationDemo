@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -61,6 +62,8 @@ public class MainActivity extends AppCompatActivity {
         NotificationCompat.Builder builder;
         Log.i(TAG, "showNotification:version: " + Build.VERSION.SDK_INT);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {//Android 8.0版本适配
+            NotificationChannel channel = new NotificationChannel("default", "default", NotificationManager.IMPORTANCE_HIGH);
+            notificationManager.createNotificationChannel(channel);
             builder = new NotificationCompat.Builder(context, "default");
         } else {
             builder = new NotificationCompat.Builder(context);
